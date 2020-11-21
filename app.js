@@ -2,6 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
 
+const bodyParser = require("body-parser");
+
+// const sauceRoutes = require("./routes/sauce");
+const userRoutes = require("./routes/user");
+
 mongoose
   .connect(
     "mongodb+srv://pekocko:project6@cluster0.vqtew.mongodb.net/sauces?retryWrites=true&w=majority"
@@ -26,5 +31,10 @@ app.use((req, res, next) => {
   );
   next();
 });
+
+app.use(bodyParser.json());
+
+// app.use("/api/sauces", sauceRoutes);
+app.use("/api/auth", userRoutes);
 
 module.exports = app;
