@@ -27,28 +27,23 @@ exports.getOneSauce = (req, res, next) => {
 };
 
 exports.createSauce = (req, res, next) => {
-  //   console.log(req.body);
-  //   res.status(201).json({
-  //     message: "Sauce created successfully!",
-  //   });
-  // };
-
   req.body.sauce = JSON.parse(req.body.sauce);
   const url = req.protocol + "://" + req.get("host");
   const sauce = new Sauce({
-    _id: req.body._id,
-    name: req.body.name,
-    manufacturer: req.body.manufacturer,
-    description: req.body.description,
-    mainPepper: req.body.mainPepper,
+    // _id: req.body._id,
+    userId: req.body.sauce.userId,
+    name: req.body.sauce.name,
+    manufacturer: req.body.sauce.manufacturer,
+    description: req.body.sauce.description,
+    mainPepper: req.body.sauce.mainPepper,
     imageUrl: url + "/images/" + req.file.filename,
-    heat: req.body.heat,
-    // userId: req.body.userId,
+    heat: req.body.sauce.heat,
     // likes: req.body.likes,
     // dislikes: req.body.dislikes,
     // userLikes: req.body.userLikes,
     // userDislikes: req.body.userDislikes,
   });
+  console.log(sauce);
   sauce
     .save()
     .then(() => {
