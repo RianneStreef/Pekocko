@@ -1,4 +1,4 @@
-const Sauce = require("../models/sauce");
+const Sauce = require('../models/sauce');
 
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
@@ -29,13 +29,16 @@ exports.getOneSauce = (req, res, next) => {
     });
 };
 
+console.log('TEST DB');
+
+Sauce.deleteMany({});
+
 exports.createSauce = (req, res, next) => {
   console.log('createSauce: start');
 
-  const url = req.protocol + "://" + req.get("host");
-  
+  const url = req.protocol + '://' + req.get('host');
+
   console.log(req.body.sauce);
-  console.log(req.body);
 
   const {
     userId,
@@ -46,12 +49,14 @@ exports.createSauce = (req, res, next) => {
     heat,
   } = JSON.parse(req.body.sauce);
 
-  const imageUrl = url + "/images/" + req.file.filename;
+  console.log(req.body.sauce);
+
+  const imageUrl = url + '/images/' + req.file.filename;
 
   const likes = 10;
   const dislikes = 10;
-  const usersLiked = 'Yup';
-  const usersDisliked = 'Nope';
+  const usersLiked = [];
+  const usersDisliked = [];
 
   const sauce = new Sauce({
     userId,
@@ -72,7 +77,7 @@ exports.createSauce = (req, res, next) => {
     .save()
     .then(() => {
       res.status(201).json({
-        message: "Post saved successfully!",
+        message: 'Post saved successfully!',
       });
     })
     .catch((error) => {
@@ -82,14 +87,20 @@ exports.createSauce = (req, res, next) => {
     });
 };
 
-exports.modifySauce = (req, res, next) => {
-};
+exports.modifySauce = (req, res, next) => {};
+
+// If 'like' = 1
+//   Add userId to usersLiked array
+//   Increment likes by 1
+// Else if 'like' = -1
+//   Check if userId is in both usersLiked and usersDisliked arrays
+//   Increment dislikes by 1
 
 exports.deleteSauce = (req, res, next) => {
   Sauce.deleteOne({ _id: req.params.id })
     .then(() => {
       res.status(200).json({
-        message: "Deleted!",
+        message: 'Deleted!',
       });
     })
     .catch((error) => {
@@ -100,4 +111,3 @@ exports.deleteSauce = (req, res, next) => {
 };
 
 exports.likeSauce = (req, res, next) => {};
-
