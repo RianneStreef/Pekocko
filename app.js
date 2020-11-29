@@ -9,10 +9,12 @@ const path = require("path");
 const sauceRoutes = require("./routes/sauce");
 const userRoutes = require("./routes/user");
 
+require('dotenv').config();
+
 mongoose
-  .connect(
-    "mongodb+srv://pekocko:project6@cluster0.vqtew.mongodb.net/sauces?retryWrites=true&w=majority"
-  )
+.connect(
+  `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_URL}/sauces?retryWrites=true&w=majority`,
+)
   .then(() => {
     console.log("Successfully connected to MongoDB Atlas!");
   })
