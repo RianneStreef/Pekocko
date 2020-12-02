@@ -1,4 +1,6 @@
-const mongoose = require("mongoose");
+// We added default: undefined at to usersLiked and usersDisliked as
+//    it would otherwise create empty arrays
+const mongoose = require('mongoose');
 const sauceSchema = mongoose.Schema({
   userId: { type: String, required: true },
   name: { type: String, required: true },
@@ -9,10 +11,8 @@ const sauceSchema = mongoose.Schema({
   heat: { type: Number, required: true },
   likes: { type: Number, required: true },
   dislikes: { type: Number, required: true },
-  usersLiked: { type: [String], required: true },
-  usersDisliked: { type: [String], required: true },
+  usersLiked: { type: [String], default: undefined, required: true },
+  usersDisliked: { type: [String], default: undefined, required: true },
 });
 
-module.exports = mongoose.model("Sauce", sauceSchema);
-
-
+module.exports = mongoose.model('Sauce', sauceSchema);
