@@ -1,5 +1,5 @@
-const sauce = require("../models/sauce");
 const Sauce = require("../models/sauce");
+const chalk = require("chalk");
 
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
@@ -76,17 +76,21 @@ exports.createSauce = (req, res, next) => {
 };
 
 exports.modifySauce = (req, res, next) => {
-  const url = req.protocol + "://" + req.get("host");  
-  const {
-    name,
-    manufacturer,
-    description,
-    mainPepper,
-    heat,
-  } = JSON.parse(req.body.sauce);
-
-  const imageUrl = url + "/images/" + req.file.filename;
+  console.log(chalk.blue('modify sauce RUNNING'));
   
+  const url = req.protocol + "://" + req.get("host");  
+
+  const { name, manufacturer, description, mainPepper, heat } = req.body;
+
+  let imageUrl;
+
+  if (req.hasOwnProperty('file')) {
+    imageUrl = url + '/images/' + req.file.filename;
+  } 
+
+  // why not if ....
+  // let imageUrl = .. 
+
   const sauce = new Sauce({
     name,
     manufacturer,
@@ -98,19 +102,47 @@ exports.modifySauce = (req, res, next) => {
 
   console.log('Modified sauce' + sauce);
 
-  Sauce.findOneAndUpdate({_id: req.params.id}, sauce).then(
-    () => {
+/* why does it add usersLiked but not likes?! Also imageUrl dislikes and userID
+are missing */
+
+  // sauce.name = name;
+  // sauce.manufacturer = manufacturer;
+  // sauce.description = description;
+  // sauce.mainPepper = mainPepper;
+  // sauce.heat = heat;
+  // sauce.imageUrl = imageUrl ;
+  
+// do I need this? Why? I am creating an object ( just with missing info )
+
+  sauce
+    .save()
+    .then(() => {
       res.status(201).json({
-        message: 'Sauce updated successfully!'
+        message: "Post saved successfully!",
       });
-    }
-  ).catch(
-    (error) => {
+    })
+    .catch((error) => {
       res.status(400).json({
-        error: error
+        error: error,
       });
-    }
-  );
+    });
+
+
+  // sauce.save();
+
+  // Sauce.findOneAndUpdate({_id: req.params.id}, sauce).then(
+  //   () => {
+  //     res.status(201).json({
+  //       message: 'Sauce updated successfully!'
+  //     });
+  //   }
+  // ).catch(
+  //   (error) => {
+  //     res.status(400).json({
+  //       error: error
+  //     });
+  //   }
+  // );
 };
 
 exports.deleteSauce = (req, res, next) => { 
@@ -127,18 +159,32 @@ exports.deleteSauce = (req, res, next) => {
     });
   };
 
+
+
+  
 exports.likeSauce = (req, res, next) => {
+// POST route, so get Sauce info and POST again? Of will that cause 
+// duplicates
+
   Sauce.findOneAndUpdate({
     _id: req.params.id,
   })
 
-  //determine input - 1/ 0/ -1
+  console.log(chalk.magenta('LIKE SAUCE'));
+  console.log(chalk.magenta('----------'));
+  console.log(chalk.magenta(req.body.like));
 
-  if (input = 1) {
+console.log(chalk.cyan('Sauce found'));
+console.log(chalk.blue(Sauce));
+// Get sauce object to use usersLiked
+
+  const input = req.body.like;
+
+  if (input === 1) {
     const alreadyLiked = usersLiked.includes(userId); 
     const alreadyDisliked = usersDisliked.includes(userId);
     if (alreadyLiked && alreadyDisliked === -1) {
-      // sauce.likes +=
+    sauce.likes += 1;
       usersLiked.push(userId);
     }
     if (alreadyLiked || alreadyDisliked >= 0) {
@@ -149,11 +195,11 @@ exports.likeSauce = (req, res, next) => {
       }
     }
   }
-  if (input = -1) {
+  if (input === -1) {
     const alreadyLiked = usersLiked.includes(userId); 
     const alreadyDisliked = usersDisliked.includes(userId);
     if (alreadyLiked && alreadyDisliked === -1) {
-      // sauce.disLikes +=
+      sauce.disLikes += 1;
       usersDisliked.push(userId);
     }
     if (alreadyLiked || alreadyDisliked >= 0) {
@@ -164,7 +210,7 @@ exports.likeSauce = (req, res, next) => {
       }
     }
   }
-  if (input = 0) {
+  if (input === 0) {
     const alreadyLiked = usersLiked.includes(userId); 
     const alreadyDisliked = usersDisliked.includes(userId);
     if (alreadyLiked && alreadyDisliked === -1) {
@@ -174,11 +220,12 @@ exports.likeSauce = (req, res, next) => {
         });
     }
     if (alreadyLiked >= 0) {
-      //sauce.likes -=
-      //remove userId from array
+      sauce.likes -= 1;
+      //remove userId from array - filter and only return the id that are not this one
+      
     }
     if (alreadyDisliked >= 0) {
-        //sauce.likes +=
+      sauce.likes -= 1;
         //remove userId from array
     }
     };
@@ -189,5 +236,4 @@ exports.likeSauce = (req, res, next) => {
   // POST object
 
   // catch 
-
 }
