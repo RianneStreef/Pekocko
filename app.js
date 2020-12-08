@@ -11,6 +11,8 @@ const userRoutes = require("./routes/user");
 
 require('dotenv').config();
 
+mongoose.set('useFindAndModify', false);
+
 mongoose
 .connect(
   `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_URL}/sauces?retryWrites=true&w=majority`,
