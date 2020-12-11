@@ -1,5 +1,6 @@
 const Sauce = require("../models/sauce");
 const chalk = require("chalk");
+const url = require('url');
 
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
@@ -116,11 +117,14 @@ exports.modifySauce = (req, res, next) => {
       userId: parsedData.userId,
       imageUrl,
     };
+    console.log('new object = ' + newObj);
+
     // Picture hasn't changed
   } else {
     // No need to do anything with the data since it's already parsed for us.
     console.log(chalk.red.inverse('NO IMAGE'));
     newObj = { ...req.body }; // Spread out to create copy of object. No mutation
+    console.log('new object = ' + newObj);
   }
 
   // We aren't creating a new sauce so don't create a new one like this.
@@ -129,14 +133,20 @@ exports.modifySauce = (req, res, next) => {
 
   Sauce.findByIdAndUpdate(
     { _id: sauceId },
-    {
+    { ...newObj },
+    /*
       name: newObj.name,
       manufacturer: newObj.manufacturer,
       description: newObj.description,
-      // Haven't added all of them here
+      mainPepper: newObj.mainPepper,
+      heat: newObj.heat,
+      userId: newObj.userId, 
+      */
+   
+
+       // Haven't added all of them here
       // You could spread out the object again so all the fields
       //    are added dynamically
-    },
     (err, updatedSauce) => {
       if (err) {
         console.log('ERROR');
@@ -169,69 +179,72 @@ exports.likeSauce = (req, res, next) => {
 // // POST route, so get Sauce info and POST again? Of will that cause 
 // // duplicates
 
-//   Sauce.findOneAndUpdate({
-//     _id: req.params.id,
-//   })
+  Sauce.findOneAndUpdate({
+    _id: req.params.id,
+  })
 
-//   console.log(chalk.magenta('LIKE SAUCE'));
-//   console.log(chalk.magenta('----------'));
-//   console.log(chalk.magenta(req.body.like));
+  console.log(chalk.magenta('LIKE SAUCE'));
+  console.log(chalk.magenta('----------'));
+  console.log(chalk.magenta(req.body.like));
 
-// console.log(chalk.cyan('Sauce found'));
-// console.log(chalk.blue(Sauce));
-// // Get sauce object to use usersLiked
+  console.log(chalk.cyan('Sauce found'));
+  console.log(chalk.blue(Sauce));
 
-//   const input = req.body.like;
+  // // Get sauce object to use usersLiked
 
-//   if (input === 1) {
-//     const alreadyLiked = usersLiked.includes(userId); 
-//     const alreadyDisliked = usersDisliked.includes(userId);
-//     if (alreadyLiked && alreadyDisliked === -1) {
-//     sauce.likes += 1;
-//       usersLiked.push(userId);
-//     }
-//     if (alreadyLiked || alreadyDisliked >= 0) {
-//         (error) => {
-//           res.status(400).json({
-//             error: "You already evaluated this sauce!" 
-//           });
-//       }
-//     }
-//   }
-//   if (input === -1) {
-//     const alreadyLiked = usersLiked.includes(userId); 
-//     const alreadyDisliked = usersDisliked.includes(userId);
-//     if (alreadyLiked && alreadyDisliked === -1) {
-//       sauce.disLikes += 1;
-//       usersDisliked.push(userId);
-//     }
-//     if (alreadyLiked || alreadyDisliked >= 0) {
-//         (error) => {
-//           res.status(400).json({
-//             error: "You already evaluated this sauce!" 
-//           });
-//       }
-//     }
-//   }
-//   if (input === 0) {
-//     const alreadyLiked = usersLiked.includes(userId); 
-//     const alreadyDisliked = usersDisliked.includes(userId);
-//     if (alreadyLiked && alreadyDisliked === -1) {
-//       (error) => {
-//         res.status(400).json({
-//           error: "You have not evaluated this sauce yet!" 
-//         });
-//     }
-//     if (alreadyLiked >= 0) {
-//       sauce.likes -= 1;
-//       //remove userId from array - filter and only return the id that are not this one
+{ const input = req.body.like;
+
+  if (input === 1) {
+    const alreadyLiked = usersLiked.includes(userId); 
+    const alreadyDisliked = usersDisliked.includes(userId);
+    if (alreadyLiked && alreadyDisliked === -1) {
+    sauce.likes += 1;
+    usersLiked.push(userId);
+    console.log('Sauce liked!')
+    }
+    if (alreadyLiked || alreadyDisliked >= 0) {
+        (error) => {
+          res.status(400).json({
+            error: "You already evaluated this sauce!" 
+          });
+      }
+    }
+  }
+  if (input === -1) {
+    const alreadyLiked = usersLiked.includes(userId); 
+    const alreadyDisliked = usersDisliked.includes(userId);
+    if (alreadyLiked && alreadyDisliked === -1) {
+      sauce.disLikes += 1;
+      usersDisliked.push(userId);
+    }
+    if (alreadyLiked || alreadyDisliked >= 0) {
+        (error) => {
+          res.status(400).json({
+            error: "You already evaluated this sauce!" 
+          });
+      }
+    }
+  }
+}
+  // if (input === 0) {
+  //   const alreadyLiked = usersLiked.includes(userId); 
+  //   const alreadyDisliked = usersDisliked.includes(userId);
+  //   if (alreadyLiked && alreadyDisliked === -1) {
+  //     (error) => {
+  //       res.status(400).json({
+  //         error: "You have not evaluated this sauce yet!" 
+  //       });
+  //   }
+  //   if (alreadyLiked >= 0) {
+  //     sauce.likes -= 1;
+  //     //remove userId from array - filter and only return the id that are not this one
       
-//     }
-//     if (alreadyDisliked >= 0) {
-//       sauce.likes -= 1;
-//         //remove userId from array
-//     }
-//     };
+  //   }
+  //   if (alreadyDisliked >= 0) {
+  //     sauce.likes -= 1;
+  //       //remove userId from array
+  //   }
+  //   };
   // } 
 
   // check if object is updated
