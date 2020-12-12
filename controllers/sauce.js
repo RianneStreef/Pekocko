@@ -261,7 +261,14 @@ exports.deleteSauce = (req, res, next) => {
 
               likes -= 1;
               //remove userId from array - filter and only return the id that are not this one
+              alreadyLiked.filter((item) => item !== userId);
+              
+
               sauceFound.likes = likes;
+              sauceFound.usersLiked = alreadyLiked;
+
+// I should not do this, it modifies the object. 
+
               sauceFound.save();
               res.status(201).json({
                 message: 'Like deleted!',
