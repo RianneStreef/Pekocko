@@ -247,6 +247,32 @@ exports.likeSauce = (req, res, next) => {
   //   };
   // } 
 
+  const likedSauce = {
+    userId,
+    name,
+    manufacturer,
+    description,
+    mainPepper,
+    usersDisliked,
+    usersLiked,
+    dislikes,
+    likes,
+    heat,
+    imageUrl,
+  };
+  likedSauce
+    .save()
+    .then(() => {
+      res.status(201).json({
+        message: "Sauce successfully evaluated!",
+      });
+    })
+    .catch((error) => {
+      res.status(400).json({
+        error: error,
+      });
+    });
+
   // check if object is updated
 
   // POST object
