@@ -2,6 +2,9 @@ const Sauce = require("../models/sauce");
 const chalk = require("chalk");
 const url = require('url');
 const e = require('express');
+const { isWorker } = require("cluster");
+
+
 
 
 exports.getAllSauces = (req, res, next) => {
@@ -163,51 +166,51 @@ exports.deleteSauce = (req, res, next) => {
       });
     });
   };
-
-
-
   
   exports.likeSauce = (req, res, next) => {
     const input = req.body.like;
-  
+    const ID = req.body.userId;  
+
+
+    console.log(chalk.magenta.inverse('current userID '+ ID));
+
     Sauce.findOne(
       {
         _id: req.params.id, // Filter
       },
       (err, sauceFound) => {
         if (err) {
-          // Error is found
-          console.log(chalk.red.inverse('Error'), err);
-        } else {
-          // Found sauce
-          console.log(chalk.inverse('Sauce found:'));
-          console.log(sauceFound);
-          // // Get sauce object to use usersLiked
-    
-          const { usersLiked, usersDisliked, userId } = sauceFound;
-          let { likes, dislikes } = sauceFound;
-  
-          console.log({userId});
-        // this userID is the ID of the person who created it, not the one that it trying to evaluate it.. 
+        // Error is found
+        console.log(chalk.red.inverse('Error'), err);
+        }
+        else {
+           // Found sauce
+           console.log(chalk.inverse('Sauce found:'));
+           console.log(sauceFound);
+           // // Get sauce object to use usersLiked
+     
+           const { usersLiked, usersDisliked, userId } = sauceFound;
+           let { likes, dislikes } = sauceFound;
+           console.log(chalk.magenta('usersLiked in the beginning '+ usersLiked));
+           console.log(chalk.magenta('type of usersLiked '+ typeof usersLiked));
 
-
-          const alreadyLiked = usersLiked.includes(userId);
-          const alreadyDisliked = usersDisliked.includes(userId);
-
-          console.log({input});
-
+           const alreadyLiked = usersLiked.includes(ID);
+           const alreadyDisliked = usersDisliked.includes(userId);
+ 
+           console.log({input});
+        
           if (input === 1) {
-            console.log('Liked is 1');
-            console.log({ alreadyLiked, alreadyDisliked });
+          console.log('Liked is 1');
+          console.log({ alreadyLiked, alreadyDisliked });
             if (!alreadyLiked && !alreadyDisliked) {
-              console.log('Both alreadyLiked and alreadyDisliked false');
-              likes += 1;
-              usersLiked.push(userId);
-              console.log('Sauce liked!', likes);
-              sauceFound.likes = likes;
-              sauceFound.save();
-              res.status(201).json({
-                message: 'Sauce successfully evaluated!',
+            console.log('Both alreadyLiked and alreadyDisliked false');
+            likes += 1;
+            usersLiked.push(ID);
+            console.log('Sauce liked!', likes);
+            sauceFound.likes = likes;
+            sauceFound.save();
+            res.status(201).json({
+              message: 'Sauce successfully evaluated!',
               });
             }
             if (alreadyLiked  || alreadyDisliked ) {
@@ -217,13 +220,14 @@ exports.deleteSauce = (req, res, next) => {
               });
             }
           }
+      
           if (input === -1) {
             console.log('Liked is -1');
             console.log({ alreadyLiked, alreadyDisliked });
             if (!alreadyLiked && !alreadyDisliked) {
               console.log('Both alreadyLiked and alreadyDisliked false');
               dislikes += 1;
-              usersDisliked.push(userId);
+              usersDisliked.push(ID);
               console.log('Sauce disliked!', dislikes);
               sauceFound.dislikes = dislikes;
               sauceFound.save();
@@ -232,7 +236,9 @@ exports.deleteSauce = (req, res, next) => {
               });
             }
             if (alreadyLiked || alreadyDisliked) {
-              (error) => {
+              console.log('error');
+              (res) => {
+                // I changed this error -> res (error was in grey)
                 res.status(400).json({
                   error: 'You already evaluated this sauce!',
                 });
@@ -249,31 +255,34 @@ exports.deleteSauce = (req, res, next) => {
                 res.status(400).json({
                   error: "You have not evaluated this sauce yet!" 
                 });
+                //This is not possible? It will only send a 0 if already like, the only reason to include this, is to for see errors
+
+              }
             }
-
-            //This is not possible? It will only send a 0 if already like, the only reason to include this, is to for see errors
-
-
             if (alreadyLiked) {
               console.log("deleting like");
-
-              //Why won't this run? 
-
-              likes -= 1;
-              //remove userId from array - filter and only return the id that are not this one
-              alreadyLiked.filter((item) => item !== userId);
+              likes -= 1;            
               
+              function removeLike (ID, usersLiked) {
+
+                // const { usersLiked, usersDisliked, userId } = sauceFound;
+
+                console.log(chalk.magenta('usersLiked in function '+ usersLiked));
+                // const newUsersLiked = usersLiked.filter((likes) => likes !== ID);
+                // console.log({newUsersLiked});
+              }
+
+              removeLike();
 
               sauceFound.likes = likes;
-              sauceFound.usersLiked = alreadyLiked;
+              // sauceFound.usersLiked = newUsersLiked;
 
-// I should not do this, it modifies the object. 
+              // I should not do this, it modifies the object. 
 
               sauceFound.save();
               res.status(201).json({
                 message: 'Like deleted!',
               });
-              
             }
             if (alreadyDisliked) {
               console.log("deleting dislike");
@@ -285,10 +294,10 @@ exports.deleteSauce = (req, res, next) => {
                 res.status(201).json({
                   message: 'Dislike deleted!',
                 });
-            }
-            } ;
+            }; 
           }
         }
-      },
-    );
-}
+      }
+    )          
+}     
+ 
