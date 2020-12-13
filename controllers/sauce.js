@@ -193,7 +193,7 @@ const removeDislike = (ID, usersLiked) => usersLiked.filter((likes) => likes !==
            console.log(sauceFound);
            // // Get sauce object to use usersLiked
      
-           const { usersLiked, usersDisliked, userId } = sauceFound;
+           const { usersLiked, usersDisliked} = sauceFound;
            let { likes, dislikes } = sauceFound;
            console.log(chalk.magenta('usersLiked in the beginning '+ usersLiked));
            console.log(chalk.magenta('type of usersLiked '+ typeof usersLiked));
@@ -219,12 +219,15 @@ const removeDislike = (ID, usersLiked) => usersLiked.filter((likes) => likes !==
               message: 'Sauce successfully evaluated!',
               });
             }
+
+            /*
             if (alreadyLiked  || alreadyDisliked ) {
               console.log('alreadyLiked or alreadyDisliked true');
               res.status(201).json({
                 message: 'Sauce already evaluated!',
               });
             }
+            */
           }
       
           if (input === -1) {
@@ -241,6 +244,7 @@ const removeDislike = (ID, usersLiked) => usersLiked.filter((likes) => likes !==
                 message: 'Sauce successfully evaluated!',
               });
             }
+            /*
             if (alreadyLiked || alreadyDisliked) {
               console.log('error');
               (res) => {
@@ -250,6 +254,7 @@ const removeDislike = (ID, usersLiked) => usersLiked.filter((likes) => likes !==
                 });
               };
             }
+            */
           }
           if (input === 0 ) {
             console.log("deleting like/dislike");
