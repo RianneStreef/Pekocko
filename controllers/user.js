@@ -17,7 +17,7 @@ exports.signup = (req, res, next) => {
       })
       .catch((error) => {
         res.status(500).json({
-          error: error,
+          error,
         });
       });
   });
@@ -39,7 +39,7 @@ exports.login = (req, res, next) => {
               error: new Error("Incorrect password!"),
             });
           }
-          const token = jwt.sign({ userId: user._id }, "RANDOM_TOKEN_SECRET", {
+          const token = jwt.sign({ userId: user._id }, "ksjghdfliSGvligSBDLVb", {
             expiresIn: "24h",
           });
           res.status(200).json({

@@ -1,11 +1,5 @@
 const Sauce = require("../models/sauce");
 const chalk = require("chalk");
-const url = require('url');
-const e = require('express');
-const { isWorker } = require("cluster");
-
-
-
 
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
@@ -81,38 +75,16 @@ exports.createSauce = (req, res, next) => {
 };
 
 exports.modifySauce = (req, res, next) => {
-  console.log(chalk.blue('modify sauce RUNNING'));
-  console.log(chalk.blue('--------------------------'));
-
-  // // Get sauce id from URL
-  const sauceId = req.originalUrl.substring(
-    req.originalUrl.lastIndexOf('/') + 1,
-  );
-
-  // req.body
-  //   /--> req.body.sauce
-  // --
-  //   \--> req.body
-
-  // 1. Define our variables so we can set them
-  // 2. Figure out if image uploaded or not
-  // 2.1 If image is upload, parse it
-  // 2.2 If no image, then use as-is
-  // 3. Find the sauce we want to update
-  // 4. Update the sauce
-  // 5. Send back the request and also deal with errors
+  const sauceId = req.params.id;
 
   const host = req.protocol + '://' + req.get('host');
 
-  // Create obj so we can use it throughout the function.
   let newObj = {};
 
   // Picture has changed
   if (req?.body?.sauce) {
-    console.log(chalk.red.inverse('NEW IMAGE'));
     const parsedData = JSON.parse(req.body.sauce);
     const imageUrl = host + '/images/' + req.file.filename;
-    // Create an object with all of the data
     newObj = {
       name: parsedData.name,
       manufacturer: parsedData.manufacturer,
@@ -122,19 +94,11 @@ exports.modifySauce = (req, res, next) => {
       userId: parsedData.userId,
       imageUrl,
     };
-    console.log('new object = ' + newObj);
 
     // Picture hasn't changed
   } else {
-    // No need to do anything with the data since it's already parsed for us.
-    console.log(chalk.red.inverse('NO IMAGE'));
-    newObj = { ...req.body }; // Spread out to create copy of object. No mutation
-    console.log('new object = ' + newObj);
+    newObj = { ...req.body }; 
   }
-
-  // We aren't creating a new sauce so don't create a new one like this.
-  //    This would be if you were going to add a new sauce to the db.
-  // const sauce = new Sauce({ ...newObj });
 
   Sauce.findByIdAndUpdate(
     { _id: sauceId },
@@ -143,8 +107,6 @@ exports.modifySauce = (req, res, next) => {
       if (err) {
         console.log('ERROR');
       } else {
-        console.log('Changed sauce:');
-        console.log(updatedSauce);
         res.status(201).json({
           message: 'Sauce successfully modified!',
         });
@@ -170,17 +132,13 @@ exports.deleteSauce = (req, res, next) => {
 const removeLike = (ID, usersLiked) => usersLiked.filter((likes) => likes !==ID);
 const removeDislike = (ID, usersLiked) => usersLiked.filter((likes) => likes !==ID);
 
-
   exports.likeSauce = (req, res, next) => {
     const input = req.body.like;
     const ID = req.body.userId;  
 
-
-    console.log(chalk.magenta.inverse('current userID '+ ID));
-
     Sauce.findOne(
       {
-        _id: req.params.id, // Filter
+        _id: req.params.id, 
       },
       (err, sauceFound) => {
         if (err) {
@@ -188,81 +146,38 @@ const removeDislike = (ID, usersLiked) => usersLiked.filter((likes) => likes !==
         console.log(chalk.red.inverse('Error'), err);
         }
         else {
-           // Found sauce
-           console.log(chalk.inverse('Sauce found:'));
-           console.log(sauceFound);
-           // // Get sauce object to use usersLiked
-     
            const { usersLiked, usersDisliked} = sauceFound;
            let { likes, dislikes } = sauceFound;
-           console.log(chalk.magenta('usersLiked in the beginning '+ usersLiked));
-           console.log(chalk.magenta('type of usersLiked '+ typeof usersLiked));
 
            const alreadyLiked = usersLiked.includes(ID);
            const alreadyDisliked = usersDisliked.includes(ID);
- 
-           console.log({input});
-        
+         
           if (input === 1) {
-          console.log('Liked is 1');
-          console.log({ alreadyLiked, alreadyDisliked });
             if (!alreadyLiked && !alreadyDisliked) {
-            console.log('Both alreadyLiked and alreadyDisliked false');
             likes += 1;
             usersLiked.push(ID);
-            console.log('Sauce liked!', likes);
             sauceFound.likes = likes;
-            console.log('sauce before saving: ' + sauceFound);
 
             sauceFound.save();
             res.status(201).json({
               message: 'Sauce successfully evaluated!',
               });
             }
-
-            /*
-            if (alreadyLiked  || alreadyDisliked ) {
-              console.log('alreadyLiked or alreadyDisliked true');
-              res.status(201).json({
-                message: 'Sauce already evaluated!',
-              });
-            }
-            */
           }
       
           if (input === -1) {
-            console.log('Liked is -1');
-            console.log({ alreadyLiked, alreadyDisliked });
             if (!alreadyLiked && !alreadyDisliked) {
-              console.log('Both alreadyLiked and alreadyDisliked false');
               dislikes += 1;
               usersDisliked.push(ID);
-              console.log('Sauce disliked!', dislikes);
               sauceFound.dislikes = dislikes;
               sauceFound.save();
               res.status(201).json({
                 message: 'Sauce successfully evaluated!',
               });
             }
-            /*
-            if (alreadyLiked || alreadyDisliked) {
-              console.log('error');
-              (res) => {
-                // I changed this error -> res (error was in grey)
-                res.status(400).json({
-                  error: 'You already evaluated this sauce!',
-                });
-              };
-            }
-            */
           }
-          if (input === 0 ) {
-            console.log("deleting like/dislike");
-            console.log({alreadyLiked});
-            console.log({alreadyDisliked});
-            
+          if (input === 0 ) {          
             if (alreadyLiked) {
-              console.log("deleting like");
               likes -= 1;            
               const newUsersLiked = removeLike(ID, usersLiked);
     
@@ -270,14 +185,12 @@ const removeDislike = (ID, usersLiked) => usersLiked.filter((likes) => likes !==
               sauceFound.usersLiked = newUsersLiked;
 
               sauceFound.save();
-              console.log('sauce before saving: ' + sauceFound);
 
               res.status(201).json({
                 message: 'Like deleted!',
               });
             }
               if (alreadyDisliked) {
-                console.log("deleting dislike");
                 dislikes -= 1;            
                 const newUsersDisliked = removeDislike(ID, usersDisliked);
     
@@ -285,7 +198,6 @@ const removeDislike = (ID, usersLiked) => usersLiked.filter((likes) => likes !==
                 sauceFound.usersDisliked = newUsersDisliked;
 
                 sauceFound.save();
-                console.log('sauce before saving: ' + sauceFound);
 
               res.status(201).json({
                 message: 'Dislike deleted!',
